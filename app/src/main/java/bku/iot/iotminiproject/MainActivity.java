@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     TextView timetuoicay;
     private int timeInMinutes;
     boolean kiemtraphun=false;
-    AlertDialog.Builder builder;
+    AlertDialog.Builder builder1,builder2;
     boolean check=true;
 
     @Override
@@ -54,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
                         if(Timer!=null)
                         {
                             Timer.cancel();
-                            timetuoicay.setText("1");
                             sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "0");
                         }
                         sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2","1");
@@ -73,15 +72,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        builder=new AlertDialog.Builder(this);
+        builder1=new AlertDialog.Builder(this);
+        builder2=new AlertDialog.Builder(this);
         timetuoicay =(EditText) findViewById(R.id.timetuoicay);
         btnTuoi = (LabeledSwitch)  findViewById(R.id.btnTuoi);
+        final int[] min = {1};
+        final int[] sec = { 0 };
 
         btnTuoi.setOnToggledListener(new OnToggledListener()  {
             @Override
             public void onSwitched(ToggleableView toggleableView, boolean isOn) {
                 if (kiemtraphun == true) {
-                    builder.setTitle("Alert!").setMessage("Vui lòng tắt máy phun thuốc").setCancelable(true).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    builder1.setTitle("Alert!").setMessage("Vui lòng tắt máy phun thuốc").setCancelable(true).setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             dialogInterface.cancel();
@@ -91,27 +93,49 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else {
                     if (isOn == true) {
-                        timeInMinutes = Integer.parseInt(timetuoicay.getText().toString());
-                        Timer = new CountDownTimer(timeInMinutes * 60 * 1000, 1000) {
-                            @Override
-                            public void onTick(long millisUntilFinished) {
-                                if (check == true) {
-                                    sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "1");
+                        String timeText = timetuoicay.getText().toString();
+                        if (!timeText.equals("Tắt máy bơm")) {
+                                if (timeText.contains(":")) {
+                                    String[] timeParts = timeText.split(":");
+                                    min[0] = Integer.parseInt(timeParts[0].trim());
+                                    sec[0] = Integer.parseInt(timeParts[1].trim());
+                                } else {
+                                    min[0] = Integer.parseInt(timeText.trim());
+                                    sec[0]=0;
                                 }
-                                int remainingMinutes = (int) (millisUntilFinished / (1000 * 60));
-                                int remainingSeconds = (int) ((millisUntilFinished / 1000) % 60);
-                                timetuoicay.setText(String.format("%d:%02d", remainingMinutes, remainingSeconds));
-                                check = false;
-                            }
+                            check = true;
+                            timeInMinutes=min[0]*60+sec[0];
+                            Timer = new CountDownTimer(timeInMinutes * 1000, 1000) {
+                                @Override
+                                public void onTick(long millisUntilFinished) {
+                                    if (check == true) {
+                                        sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "1");
+                                    }
+                                    int remainingMinutes = (int) (millisUntilFinished / (1000 * 60));
+                                    int remainingSeconds = (int) ((millisUntilFinished / 1000) % 60);
+                                    timetuoicay.setText(String.format("%d:%02d", remainingMinutes, remainingSeconds));
+                                    check = false;
+                                }
 
-                            @Override
-                            public void onFinish() {
-                                timetuoicay.setText("Tắt máy bơm");
-                                btnTuoi.setOn(false);
-                                sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "0");
-                                check = true;
+                                @Override
+                                public void onFinish() {
+                                    timetuoicay.setText("Tắt máy bơm");
+                                    btnTuoi.setOn(false);
+                                    sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "0");
+                                    check = true;
+                                }
+                            }.start();
                             }
-                        }.start();
+                        else
+                            {
+                                builder2.setTitle("Alert!").setMessage("Vui lòng chỉnh thời gian tưới").setCancelable(true).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.cancel();
+                                        btnTuoi.setOn(false);
+                                    }
+                                }).show();
+                            }
                     }
                     else {
                         sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "0");
@@ -160,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
                 }else if(topic.contains("cam-bien-do-am")){
                     txtHumi.setText(message.toString() + "%");
                 }else if(topic.contains("cam-bien-anh-sang")){
-                    txtHumi.setText(message.toString() + "LUX");
+                    txtLight.setText(message.toString() + "LUX");
                 }else if(topic.contains("nut-nhan-1")){
                     if(message.toString().equals("1")){
                         btnTuoi.setOn(true);
