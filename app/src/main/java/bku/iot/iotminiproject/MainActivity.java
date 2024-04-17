@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
         txtHumi=findViewById(R.id.txtHumidity);
         txtLight=findViewById(R.id.txtLight);
 
-
         btnPhun= (LabeledSwitch) findViewById(R.id.btnPhun);
         btnPhun.setOnToggledListener(new OnToggledListener() {
             @Override
@@ -63,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
                     else{
                         kiemtraphun=false;
                         sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2","0");
-
                     }
                 }
         });
@@ -76,13 +74,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
-                btnTuoi.setOn(true);
-                timetuoicay.setText("1");
-                if(Timer!=null)
+                if(btnPhun.isOn()!=false)
                 {
-                    Timer.cancel();
+                    btnTuoi.setOn(true);
+                    timetuoicay.setText("1");
+                    if(Timer!=null)
+                    {
+                        Timer.cancel();
+                    }
+                    sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "1");
                 }
-                sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "1");
             }
         }).setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
@@ -180,7 +181,6 @@ public class MainActivity extends AppCompatActivity {
 
         byte[] b = value.getBytes(Charset.forName("UTF-8"));
         msg.setPayload(b);
-
         try {
             mqttHelper.mqttAndroidClient.publish(topic, msg);
         }catch (MqttException e){
