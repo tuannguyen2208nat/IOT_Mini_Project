@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     TextView timetuoicay;
     private int timeInMinutes;
     boolean kiemtraphun=false;
-    AlertDialog.Builder builder1,builder2;
+    AlertDialog.Builder builder1,builder2,builder3;
     boolean check=true;
 
     @Override
@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
         txtTemp=findViewById(R.id.txtTemperature);
         txtHumi=findViewById(R.id.txtHumidity);
         txtLight=findViewById(R.id.txtLight);
+
+
         btnPhun= (LabeledSwitch) findViewById(R.id.btnPhun);
         btnPhun.setOnToggledListener(new OnToggledListener() {
             @Override
@@ -61,13 +63,34 @@ public class MainActivity extends AppCompatActivity {
                     else{
                         kiemtraphun=false;
                         sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2","0");
+
                     }
                 }
         });
-
         startMQTT();
     }
 
+    private void showTemperatureAlert() {
+        builder3=new AlertDialog.Builder(this);
+        builder3.setTitle("Alert!").setMessage("Nhiệt độ hiện tại đang cao , bạn có muốn bật máy bơm tưới cây không ?").setCancelable(true).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+                btnTuoi.setOn(true);
+                timetuoicay.setText("1");
+                if(Timer!=null)
+                {
+                    Timer.cancel();
+                }
+                sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "1");
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        }).show();
+    }
 
     @Override
     protected void onStart() {
@@ -139,12 +162,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                     else {
                         sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "0");
-                        Timer.cancel();
+                        if(Timer!=null) {
+                            Timer.cancel();
+                        }
                         check = true;
                     }
                 }
             }
-
         });
     }
 
@@ -181,6 +205,10 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("Test",topic + "***" + message.toString());
                 if(topic.contains("cam-bien-nhiet-do")){
                     txtTemp.setText(message.toString() + "°C");
+                    int nhietdo = Integer.parseInt(message.toString());
+                    if (nhietdo > 35) {
+                        showTemperatureAlert();
+                    }
                 }else if(topic.contains("cam-bien-do-am")){
                     txtHumi.setText(message.toString() + "%");
                 }else if(topic.contains("cam-bien-anh-sang")){
@@ -199,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
 

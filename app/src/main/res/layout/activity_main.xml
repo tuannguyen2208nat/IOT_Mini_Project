@@ -247,9 +247,8 @@
                         android:textSize="20dp"
                         app:textOn ="Bật"
                         app:textOff ="Tắt"
-
                         app:on="false"
-                        app:colorBorder="@color/colorAccent"/>
+                        app:colorBorder="#000000"/>
 
 
                 </LinearLayout>
@@ -266,21 +265,32 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:orientation="vertical">
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:text="Phun thuốc"
                         android:gravity="center"
                         android:textSize="20dp"
-                        android:textStyle="bold">
+                        android:textStyle="bold"
+                        android:layout_weight="3">
 
                     </TextView>
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:src="@drawable/phunthuoc"
+                        android:layout_margin="10dp">
+
+                    </ImageView>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:layout_weight="4"
+                    android:gravity="center">
                     <com.github.angads25.toggle.widget.LabeledSwitch
                         android:id="@+id/btnPhun"
                         android:layout_width="match_parent"
@@ -292,9 +302,8 @@
                         android:textSize="20dp"
                         app:textOn ="Bật"
                         app:textOff ="Tắt"
-
                         app:on="false"
-                        app:colorBorder="#ffff00"/>
+                        app:colorBorder="#000000"/>
                 </LinearLayout>
 
 
