@@ -22,7 +22,6 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.nio.charset.Charset;
 
 public class MainActivity extends AppCompatActivity {
-
     MQTTHelper mqttHelper;
     TextView txtTemp, txtHumi ,txtLight;
     LabeledSwitch btnTuoi, btnPhun;
