@@ -7,8 +7,11 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.github.angads25.toggle.interfaces.OnToggledListener;
 import com.github.angads25.toggle.model.ToggleableView;
@@ -22,6 +25,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.nio.charset.Charset;
 
 public class MainActivity extends AppCompatActivity {
+
     MQTTHelper mqttHelper;
     TextView txtTemp, txtHumi ,txtLight;
     LabeledSwitch btnTuoi, btnPhun;
@@ -45,21 +49,21 @@ public class MainActivity extends AppCompatActivity {
         btnPhun.setOnToggledListener(new OnToggledListener() {
             @Override
             public void onSwitched(ToggleableView toggleableView, boolean isOn) {
-                    if(isOn){
-                        kiemtraphun=true;
-                        btnTuoi.setOn(false);
-                        if(Timer!=null)
-                        {
-                            Timer.cancel();
-                            sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "0");
-                        }
-                        sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2","1");
+                if(isOn){
+                    kiemtraphun=true;
+                    btnTuoi.setOn(false);
+                    if(Timer!=null)
+                    {
+                        Timer.cancel();
+                        sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "0");
                     }
-                    else{
-                        kiemtraphun=false;
-                        sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2","0");
-                    }
+                    sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2","1");
                 }
+                else{
+                    kiemtraphun=false;
+                    sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2","0");
+                }
+            }
         });
         startMQTT();
     }
@@ -116,14 +120,14 @@ public class MainActivity extends AppCompatActivity {
                     if (isOn) {
                         String timeText = timetuoicay.getText().toString();
                         if (!timeText.equals("Tắt máy bơm")) {
-                                if (timeText.contains(":")) {
-                                    String[] timeParts = timeText.split(":");
-                                    min[0] = Integer.parseInt(timeParts[0].trim());
-                                    sec[0] = Integer.parseInt(timeParts[1].trim());
-                                } else {
-                                    min[0] = Integer.parseInt(timeText.trim());
-                                    sec[0]=0;
-                                }
+                            if (timeText.contains(":")) {
+                                String[] timeParts = timeText.split(":");
+                                min[0] = Integer.parseInt(timeParts[0].trim());
+                                sec[0] = Integer.parseInt(timeParts[1].trim());
+                            } else {
+                                min[0] = Integer.parseInt(timeText.trim());
+                                sec[0]=0;
+                            }
                             check = true;
                             timeInMinutes=min[0]*60+sec[0];
                             Timer = new CountDownTimer(timeInMinutes * 1000, 1000) {
@@ -146,17 +150,17 @@ public class MainActivity extends AppCompatActivity {
                                     check = true;
                                 }
                             }.start();
-                            }
+                        }
                         else
-                            {
-                                builder2.setTitle("Alert!").setMessage("Vui lòng chỉnh thời gian tưới").setCancelable(true).setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        dialogInterface.cancel();
-                                        btnTuoi.setOn(false);
-                                    }
-                                }).show();
-                            }
+                        {
+                            builder2.setTitle("Alert!").setMessage("Vui lòng chỉnh thời gian tưới").setCancelable(true).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.cancel();
+                                    btnTuoi.setOn(false);
+                                }
+                            }).show();
+                        }
                     }
                     else {
                         sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "0");
