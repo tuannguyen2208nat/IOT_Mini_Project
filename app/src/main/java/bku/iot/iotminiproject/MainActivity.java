@@ -32,8 +32,7 @@ public class MainActivity extends AppCompatActivity {
     CountDownTimer Timer;
     TextView timetuoicay;
     private int timeInMinutes;
-    boolean kiemtraphun=false;
-    AlertDialog.Builder builder1,builder2,builder3;
+    AlertDialog.Builder builder1,builder2,builder3,builder4;
     boolean check=true;
 
     @Override
@@ -50,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSwitched(ToggleableView toggleableView, boolean isOn) {
                 if(isOn){
-                    kiemtraphun=true;
                     btnTuoi.setOn(false);
                     if(Timer!=null)
                     {
@@ -60,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
                     sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2","1");
                 }
                 else{
-                    kiemtraphun=false;
                     sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2","0");
                 }
             }
@@ -75,15 +72,47 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
                 boolean check_on=btnPhun.isOn();
-                if(!check_on)
+                if(check_on)
                 {
-                    btnTuoi.setOn(true);
+                   btnPhun.setOn(false);
+                   sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2", "0SS");
+
+                }
+                btnTuoi.setOn(true);
+                timetuoicay.setText("1");
+                if(Timer!=null)
+                {
+                    Timer.cancel();
+                }
+                sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "1");
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        }).show();
+    }
+
+    private void showHumidityAlert() {
+        builder4=new AlertDialog.Builder(this);
+        builder4.setTitle("Alert!").setMessage("Độ ẩm hiện tại đang cao , có thể trời đang mưa , bạn có muốn tắt máy bơm không ?").setCancelable(true).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+                boolean check_phun_on=btnPhun.isOn();
+                boolean check_bom_on=btnTuoi.isOn();
+                if(check_phun_on || check_bom_on)
+                {
+                    btnTuoi.setOn(false);
+                    btnPhun.setOn(false);
                     timetuoicay.setText("1");
                     if(Timer!=null)
                     {
                         Timer.cancel();
                     }
-                    sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "1");
+                    sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-1", "0");
+                    sendDataMQTT("tuannguyen2208natIOT/feeds/nut-nhan-2", "0");
                 }
             }
         }).setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -107,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
         btnTuoi.setOnToggledListener(new OnToggledListener()  {
             @Override
             public void onSwitched(ToggleableView toggleableView, boolean isOn) {
+                boolean kiemtraphun=btnPhun.isOn();
                 if (kiemtraphun) {
                     builder1.setTitle("Alert!").setMessage("Vui lòng tắt máy phun thuốc").setCancelable(true).setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
@@ -212,6 +242,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }else if(topic.contains("cam-bien-do-am")){
                     txtHumi.setText(message.toString() + "%");
+                    int doam = Integer.parseInt(message.toString());
+                    if(doam>=90){
+                        showHumidityAlert();
+                    }
                 }else if(topic.contains("cam-bien-anh-sang")){
                     txtLight.setText(message.toString() + "LUX");
                 }else if(topic.contains("nut-nhan-1")){
